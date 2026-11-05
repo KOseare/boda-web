@@ -1,0 +1,55 @@
+import { readFileSync } from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+
+// Smoke test del comportamiento real sin servicios externos ni datos personales.
+const elements = new Map();
+function el(id) {
+  if (!elements.has(id)) elements.set(id, { value: '', textContent: '', hidden: false, handlers: {}, classList: { add() {}, remove() {} }, addEventListener(name, fn) { this.handlers[name] = fn; }, reportValidity() { return true; }, setCustomValidity() {}, showModal() { this.open = true; }, close() { this.open = false; } });
+  return elements.get(id);
+}
+el('guest-count').value = '2';
+const config = { rsvpEndpoint: '', ceremonyAddress: 'Don Bosco, Mar del Plata', celebrationAddress: 'La Victoriana' };
+let fetchImpl;
+const context = vm.createContext({ window: { WEDDING_CONFIG: config }, document: { getElementById: el, querySelectorAll: () => [], body: { classList: { add() {}, remove() {} } } }, Date, Math, String, Number, setInterval() {}, matchMedia: () => ({ matches: true }), navigator: { clipboard: { writeText: async () => {} } }, crypto: { randomUUID: () => 'test-id' }, AbortSignal, fetch: (...args) => fetchImpl(...args) });
+vm.runInContext(readFileSync('dist/app.js', 'utf8'), context);
+assert.equal(el('attending-fields').hidden, true);
+el('attendance').value = 'yes';
+el('attendance').handlers.change();
+assert.equal(el('attending-fields').hidden, false);
+assert.equal(el('guest-count').required, true);
+el('guest-name').value = ' Invitado de prueba ';
+el('diet').value = 'Sin gluten';
+const submit = () => el('rsvp-form').handlers.submit({ preventDefault() {} });
+await submit();
+assert.match(el('confirmation-status').textContent, /Todavía no fue enviada/);
+assert.match(el('confirmation-text').textContent, /Personas: 2/);
+config.rsvpEndpoint = 'https://example.test/exec';
+let submitted;
+fetchImpl = async (url, options) => { submitted = JSON.parse(options.body); return { ok: true, json: async () => ({ ok: true }) }; };
+await submit();
+assert.equal(submitted['Nombre y apellido'], 'Invitado de prueba');
+assert.equal(submitted['Cantidad de asistentes'], 2);
+assert.equal(submitted['Restricciones alimentarias'], 'Sin gluten');
+assert.match(el('form-status').textContent, /enviada correctamente/);
+const previousId = submitted['ID del envío'];
+await submit();
+assert.equal(submitted['ID del envío'], previousId);
+el('attendance').value = 'no';
+el('attendance').handlers.change();
+await submit();
+assert.equal(submitted['Asistencia'], false);
+assert.equal(submitted['Cantidad de asistentes'], 0);
+assert.equal(submitted['Restricciones alimentarias'], '');
+assert.equal(el('guest-count').disabled, true);
+fetchImpl = async () => ({ ok: true, json: async () => ({ ok: false }) });
+await submit();
+assert.match(el('form-status').textContent, /No pudimos confirmar/);
+assert.equal(el('submit-rsvp').disabled, false);
+const left = Math.max(0, Math.floor((Date.parse('2027-01-16T21:00:00Z') - Date.now()) / 1000));
+assert.ok(Math.abs(Number(el('days').textContent) - Math.floor(left / 86400)) <= 1);
+assert.ok(Number(el('hours').textContent) < 24);
+assert.ok(Number(el('minutes').textContent) < 60);
+assert.ok(Number(el('seconds').textContent) < 60);
+assert.match(el('ceremony-map').href, /Don%20Bosco/);
+console.log('OK: contador UTC−3, Maps, campos condicionales, vista previa, POST, rechazo sin confirmación y reintentos.');

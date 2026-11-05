@@ -1,0 +1,16 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Ro y Juli//Casamiento//ES
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:ro-y-juli-20270116@wedding.local
+DTSTAMP:20261105T000000Z
+DTSTART:20270116T210000Z
+SUMMARY:Casamiento de Ro & Juli
+LOCATION:Iglesia Don Bosco\, Mar del Plata\, Argentina
+DESCRIPTION:Ceremonia a las 18:00 hs en Iglesia Don Bosco.\nCelebración a las
+  19:00 hs en La Victoriana\, Sierra de los Padres. Horarios de Argentina.
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR
