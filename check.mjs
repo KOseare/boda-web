@@ -46,6 +46,15 @@ fetchImpl = async () => ({ ok: true, json: async () => ({ ok: false }) });
 await submit();
 assert.match(el('form-status').textContent, /No pudimos confirmar/);
 assert.equal(el('submit-rsvp').disabled, false);
+fetchImpl = async () => ({ ok: true, json: async () => ({ status: 'success' }) });
+await submit();
+assert.match(el('form-status').textContent, /enviada correctamente/);
+for (const result of [{ status: 'error' }, {}, null, { ok: true, status: 'error' }, { ok: false, status: 'success' }]) {
+  fetchImpl = async () => ({ ok: true, json: async () => result });
+  await submit();
+  assert.match(el('form-status').textContent, /No pudimos confirmar/);
+  assert.equal(el('submit-rsvp').disabled, false);
+}
 const left = Math.max(0, Math.floor((Date.parse('2027-01-16T21:00:00Z') - Date.now()) / 1000));
 assert.ok(Math.abs(Number(el('days').textContent) - Math.floor(left / 86400)) <= 1);
 assert.ok(Number(el('hours').textContent) < 24);

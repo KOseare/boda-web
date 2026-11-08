@@ -13,7 +13,7 @@ El archivo `vercel.json` configura la publicación de `dist/`, sin instalación 
 
 Si se usa la CLI, ejecutar `vercel` desde `ro-juli` para crear una vista previa.
 
-Después de publicar, probar una confirmación desde la URL de Vercel y comprobar que aparezca en Sheets. Apps Script debe estar desplegado con acceso para todos, ejecutarse como propietario y devolver `{"ok":true}` tras guardar los datos. La prueba local `node check.mjs` simula el servicio externo; no confirma la escritura en la planilla ni los permisos del deployment.
+Después de publicar, probar una confirmación desde la URL de Vercel y comprobar que aparezca en Sheets. Apps Script debe estar desplegado con acceso para todos, ejecutarse como propietario y devolver `{"ok":true}` o `{"status":"success"}` tras guardar los datos. La prueba local `node check.mjs` simula el servicio externo; no confirma la escritura en la planilla ni los permisos del deployment.
 
 Para cambiar la URL de Sheets, editar `dist/config.js` y volver a desplegar. Vercel sirve ese archivo con revalidación de caché.
 
@@ -29,9 +29,9 @@ Payload de ejemplo:
 {"ID del envío":"uuid","Nombre y apellido":"Nombre Apellido","Asistencia":true,"Cantidad de asistentes":2,"Restricciones alimentarias":"Sin gluten","Fecha y hora de envío":"2026-11-05T01:00:00.000Z"}
 ```
 
-Usar esos mismos nombres como encabezados de la planilla. Si no asiste: `Asistencia: false`, `Cantidad de asistentes: 0`, `Restricciones alimentarias: ""`. El endpoint debe validar los datos y devolver JSON `{"ok":true}` únicamente cuando la fila ya esté guardada. Deduplicar por `ID del envío` (se conserva en reintentos del mismo formulario) para evitar duplicados si la respuesta de red se pierde. Habilitar la respuesta accesible desde el origen público y comprobar el flujo real desde el sitio publicado. No incluir tokens ni secretos en config.js.
+Usar esos mismos nombres como encabezados de la planilla. Si no asiste: `Asistencia: false`, `Cantidad de asistentes: 0`, `Restricciones alimentarias: ""`. El endpoint debe validar los datos y devolver JSON `{"ok":true}` o `{"status":"success"}` únicamente cuando la fila ya esté guardada. Deduplicar por `ID del envío` (se conserva en reintentos del mismo formulario) para evitar duplicados si la respuesta de red se pierde. Habilitar la respuesta accesible desde el origen público y comprobar el flujo real desde el sitio publicado. No incluir tokens ni secretos en config.js.
 
-Sin endpoint, el formulario muestra una vista previa con opción de copiar y aclara que no envió los datos. Si el envío falla o su respuesta no confirma `ok: true`, conserva los campos y ofrece copiar. No persiste datos personales en el navegador.
+Sin endpoint, el formulario muestra una vista previa con opción de copiar y aclara que no envió los datos. Si el envío falla o su respuesta no confirma `ok: true` o `status: "success"`, conserva los campos y ofrece copiar. No persiste datos personales en el navegador.
 
 ## Vista local
 

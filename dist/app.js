@@ -58,7 +58,7 @@
       const response = await fetch(config.rsvpEndpoint, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), redirect: 'follow', signal: AbortSignal.timeout(25000) });
       if (!response.ok) throw new Error('HTTP error');
       const result = await response.json();
-      if (result.ok !== true) throw new Error('Unconfirmed response');
+      if (!result || (result.ok !== true && result.status !== 'success') || result.ok === false || result.status === 'error') throw new Error('Unconfirmed response');
       $('form-status').textContent = 'Tu respuesta fue enviada correctamente.';
       openConfirmation(summary, attending ? '¡Gracias por confirmar! Nos hace muy felices compartir este día con vos.' : 'Gracias por avisarnos. Te vamos a extrañar en este día tan especial.', '¡Gracias por responder!');
     } catch {
