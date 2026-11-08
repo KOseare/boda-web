@@ -54,14 +54,14 @@
     button.disabled = true;
     $('form-status').textContent = 'Enviando tu respuesta…';
     try {
-      // text/plain evita el preflight de CORS de Apps Script. El cuerpo sigue siendo JSON.
-      const response = await fetch(config.rsvpEndpoint, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), redirect: 'follow', signal: AbortSignal.timeout(25000) });
-      if (!response.ok) throw new Error('HTTP error');
+      const response = await fetch(config.rsvpEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: AbortSignal.timeout(55000) });
       const result = await response.json();
+      if (!response.ok) throw new Error(result?.error || `HTTP_${response.status}`);
       if (!result || (result.ok !== true && result.status !== 'success') || result.ok === false || result.status === 'error') throw new Error('Unconfirmed response');
       $('form-status').textContent = 'Tu respuesta fue enviada correctamente.';
       openConfirmation(summary, attending ? '¡Gracias por confirmar! Nos hace muy felices compartir este día con vos.' : 'Gracias por avisarnos. Te vamos a extrañar en este día tan especial.', '¡Gracias por responder!');
-    } catch {
+    } catch (error) {
+      console.error('No se pudo confirmar el RSVP:', error.name, error.message);
       $('form-status').textContent = 'No pudimos confirmar la recepción. Podés reintentar; tu respuesta sigue en el formulario.';
       openConfirmation(summary, 'No pudimos confirmar que tu respuesta haya llegado. Conservá una copia y volvé a intentar.', 'Guardá tu respuesta');
     } finally { button.disabled = false; }

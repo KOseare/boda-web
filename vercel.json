@@ -4,6 +4,9 @@
   "buildCommand": "",
   "installCommand": "",
   "outputDirectory": "dist",
+  "functions": {
+    "api/rsvp.mjs": { "maxDuration": 60 }
+  },
   "headers": [
     {
       "source": "/config.js",
