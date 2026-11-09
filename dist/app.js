@@ -77,7 +77,7 @@
     } catch { status.textContent = 'No se pudo copiar automáticamente. Seleccioná el texto y copialo manualmente.'; }
   }
   $('copy-confirmation').addEventListener('click', () => copy($('confirmation-text').textContent, $('copy-status')));
-  document.querySelectorAll('[data-copy]').forEach(button => button.addEventListener('click', () => copy(button.dataset.copy, $('bank-status'))));
+  document.querySelectorAll('[data-copy]').forEach(button => button.addEventListener('click', () => copy(button.dataset.copy, button.closest('.bank-card').querySelector('[role="status"]'))));
   if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const observer = new IntersectionObserver(entries => entries.forEach(entry => {
       if (entry.isIntersecting) { entry.target.classList.add('is-revealing'); observer.unobserve(entry.target); }
